@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comentários Modal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-comment,
+        .btn-modal-comment {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .btn-comment:hover,
+        .btn-modal-comment:hover {
+            background-color: #e64a19;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .comentario-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .perfilNome {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <header>
+                <img src="./assets/techman.png" alt="Logo">
+            </header>
+
+            <main>
+                <h1>Comentários</h1>
+                <div id="comentarios"></div>
+                <button class="btn-comment" id="openCommentModal">Adicionar Comentário</button>
+            </main>
+
+            <div id="addCommentModal" class="modal">
+                <div class="modal-content">
+                    <span id="closeCommentModal" class="close">&times;</span>
+                    <h2>Adicionar Comentário</h2>
+                    <form id="comentarioForm">
+                        <textarea id="comentarioInput" name="comentario" placeholder="Digite seu comentário"
+                            required></textarea>
+                        <button class="btn-modal-comment" type="submit">Adicionar Comentário</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="update" class="modal">
+                <div class="modal-content">
+                    <span id="closeModalUpdate" class="close">&times;</span>
+                    <h2>Atualizar Comentário</h2>
+                    <form id="updateForm">
+                        <textarea id="updateInput" name="update" placeholder="Atualize seu comentário"
+                            required></textarea>
+                        <button type="button" class="btn-modal-comment" onclick="editComentario()">Atualizar
+                            Comentário</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const perfilId = JSON.parse(localStorage.getItem('user'));
+        const idEquip = window.localStorage.getItem('idEquip');
+        const form = document.querySelector("#comentarioForm");
+
+        let comentarioId;
+
+        async function fetchComentarios() {
+            try {
+                const response = await fetch(`http://localhost:3000/comentarios/${idEquip}`);
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+                const comentarios = await response.json();
+                renderComentarios(comentarios);
+            } catch (error) {
+                console.error('Erro ao buscar comentários:', error);
+                document.getElementById('comentarios').innerText = 'Erro ao carregar comentários.';
+            }
+        }
+
+        function renderComentarios(comentarios) {
+            const comentariosDiv = document.getElementById('comentarios');
+            comentariosDiv.innerHTML = '';
+
+            comentarios.forEach(comentario => {
+                let perfil;
+
+                switch (comentario.perfil) {
+                    case 1: perfil = 'Comum'; break;
+                    case 2: perfil = 'Administrador'; break;
+                    case 3: perfil = 'Técnico'; break;
+                    case 4: perfil = 'Gerente'; break;
+                }
+
+                const comentarioDiv = document.createElement('div');
+                comentarioDiv.className = 'comentario-item';
+                comentarioDiv.innerHTML = 
+            `<p class="perfilNome"><strong>Perfil: </strong> ${perfil}</p>
+            <p><strong>Comentário:</strong> ${comentario.comentario}</p>
+            <p><strong>Data:</strong> ${new Date(comentario.data).toLocaleString()}</p>`;
+
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.gap = '10px';
+
+                if (comentario.perfil === perfilId.perfilId) {
+                    const editButton = document.createElement('button');
+                    editButton.innerHTML = '<i class="bi bi-pencil-square"></i>';
+                    editButton.title = 'Editar Comentário';
+                    editButton.className = 'btn btn-primary btn-sm';
+                    editButton.onclick = () => openModalUpdate(comentario.id, comentario.comentario);
+                    buttonContainer.appendChild(editButton);
+                }
+
+                if (comentario.perfil === perfilId.perfilId || perfilId.perfilId === 2) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
+                    deleteButton.title = 'Deletar Comentário';
+                    deleteButton.className = 'btn btn-danger btn-sm';
+                    deleteButton.onclick = () => deleteComentario(comentario.id);
+                    buttonContainer.appendChild(deleteButton);
+                }
+
+                comentarioDiv.appendChild(buttonContainer);
+                comentariosDiv.appendChild(comentarioDiv);
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                comentario: form.comentario.value,
+                equipamentoId: Number(idEquip),
+                perfilId: perfilId.perfilId
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/comentarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+
+                form.comentario.value = '';
+                fetchComentarios();
+                closeModal('addCommentModal');
+            } catch (error) {
+                console.error('Erro ao adicionar comentário:', error);
+            }
+        });
+
+        async function deleteComentario(comentarioId) {
+            try {
+                const response = await fetch(`http://localhost:3000/comentarios/${comentarioId}`);
+                const comentario = await response.json();
+
+                if (comentario.perfil !== perfilId.perfilId && perfilId.perfilId !== 2) {
+                    alert("Você não tem permissão para excluir este comentário.");
+                    return;
+                }
+
+                if (confirm("Deseja excluir o comentário?")) {
+                    const deleteResponse = await fetch(`http://localhost:3000/comentarios/${comentarioId}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!deleteResponse.ok) {
+                        throw new Error(`Erro: ${deleteResponse.status} - ${deleteResponse.statusText}`);
+                    }
+
+                    fetchComentarios();
+                }
+            } catch (error) {
+                console.error('Erro ao deletar comentário:', error);
+            }
+        }
+
+        async function editComentario() {
+            const comentarioAtualizado = {
+                id: comentarioId,
+                comentario: document.getElementById('updateInput').value,
+                perfilId: perfilId.perfilId
+            };
+
+            try {
+                const response = await fetch(`http://localhost:3000/comentarios/${comentarioId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(comentarioAtualizado),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+
+                closeModalUpdate();
+                fetchComentarios();
+            } catch (error) {
+                console.error('Erro ao editar comentário:', error);
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).style.display = "block";
+        }
+
+        function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+    if (id === 'modal') {
+        window.location.href = 'equipamentos.html';
+    }
+}
+
+        document.getElementById('openCommentModal').onclick = () => openModal('addCommentModal');
+        document.getElementById('closeCommentModal').onclick = () => closeModal('addCommentModal');
+
+        function openModalUpdate(id, comentario) {
+            comentarioId = id;
+            document.getElementById('updateInput').value = comentario;
+            openModal('update');
+        }
+
+        document.getElementById("closeModalUpdate").onclick = () => closeModal('update');
+        document.getElementById('closeModal').onclick = () => closeModal('modal');
+
+        window.onclick = function (event) {
+            if (event.target === document.getElementById('addCommentModal')) {
+                closeModal('addCommentModal');
+            }
+            if (event.target === document.getElementById('update')) {
+                closeModal('update');
+            }
+            if (event.target === document.getElementById('modal')) {
+                closeModal('modal');
+            }
+        }
+
+        window.onload = () => openModal('modal'); 
+        fetchComentarios();
+    </script>
+</body>
+
+</html>

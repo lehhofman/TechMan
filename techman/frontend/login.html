@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            background-color: #cce2e2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 12pt;
+        }
+
+        img {
+            margin-top: 100px;
+            margin-bottom: 30px;
+            width: 400px;
+        }
+
+        .login-container {
+            width: 400px;
+            background-color: #eeedeb;
+            display: flex;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 0px 3px #999;
+            padding: 20px;
+            padding-bottom: 50px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .key-button {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #44babc;
+            background-color: #fff;
+            border-radius: 50%;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 20px;
+            color: #35797d;
+            margin: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .key-button:hover {
+            background-color: #44babc;
+            color: #fff;
+        }
+
+        .input-field {
+            width: 400px;
+            height: 15px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid #35797d;
+            text-align: center;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 20px;
+            color: #35797d;
+            padding: 0px;
+            margin-top: 20px;
+        }
+
+        .clear-button {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #44babc;
+            background-color: #fff;
+            border-radius: 50%;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 20px;
+            color: #35797d;
+            margin: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .submit-button {
+            width: 70px;
+            height: 70px;
+            border: 1px solid #44babc;
+            background-color: #fff;
+            border-radius: 50%;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 20px;
+            color: #35797d;
+            margin: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="./assets/techman.png" alt="Logo">
+    </header>
+    <main class="login-container">
+        <form id="password-form">
+            <input type="password" id="password" name="password" class="input-field">
+        </form>
+        <div class="button-grid">
+            <div class="key-button" id="1">1</div>
+            <div class="key-button" id="2">2</div>
+            <div class="key-button" id="3">3</div>
+            <div class="key-button" id="4">4</div>
+            <div class="key-button" id="5">5</div>
+            <div class="key-button" id="6">6</div>
+            <div class="key-button" id="7">7</div>
+            <div class="key-button" id="8">8</div>
+            <div class="key-button" id="9">9</div>
+            <div class="key-button clear-button" id="clear">C</div> 
+            <div class="key-button" id="0">0</div>
+            <div class="key-button submit-button" id="submit">&crarr;</div> 
+        </div>
+    </main>
+
+    <script>
+        const buttons = document.querySelectorAll('.key-button');
+        const form = document.querySelector('#password-form');
+        const clearButton = document.querySelector('#clear');
+        const submitButton = document.querySelector('#submit');
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const value = button.innerHTML;
+                if (value !== 'C' && value !== '↵') {
+                    form.password.value += value;
+                }
+            });
+        });
+
+        clearButton.addEventListener('click', () => {
+            form.password.value = '';
+        });
+
+        submitButton.addEventListener('click', () => {
+            const password = form.password.value;
+            fetch('http://localhost:3000/usuarios')
+                .then(response => response.json())
+                .then(data => {
+                    const user = data.find((user) => user.senha === password);
+                    if (user) {
+                        window.localStorage.setItem('user', JSON.stringify(user));
+                        window.location.href = 'equipamentos.html';
+                    } else {
+                        alert('Senha Incorreta');
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>

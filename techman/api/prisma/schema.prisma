@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model perfis {
+  id    Int     @id @default(autoincrement())
+  perfil String
+  usuarios usuarios[]
+  comentarios comentarios[]
+}
+
+model usuarios {
+  id       Int    @id @default(autoincrement())
+  senha    String
+  perfil   perfis @relation(fields: [perfilId], references: [id])
+  perfilId Int
+}
+
+model equipamentos {
+  id          Int         @id @default(autoincrement())
+  equipamento String
+  imagem      String
+  descricao   String
+  ativo       Int
+  data        DateTime
+  comentarios comentarios[]
+}
+
+model comentarios {
+  id           Int          @id @default(autoincrement())
+  comentario   String
+  equipamento  Int
+  perfil       Int
+  data         DateTime      @default(now())
+
+  equipamentos equipamentos @relation(fields: [equipamento], references: [id])
+  perfis       perfis       @relation(fields: [perfil], references: [id])
+}

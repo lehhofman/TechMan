@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>Equipamentos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+            text-decoration: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e5e5e5;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #44babc;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header img {
+            max-width: 150px;
+            width: 100%;
+        }
+
+        .sair {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-equipamento {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-equipamento:hover {
+            background-color: #3a999b;
+        }
+
+        main {
+            width: 95%;
+            max-width: 1200px;
+            background-color: #e7f3ff; 
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            width: 100%;
+            padding: 10px;
+            gap: 15px;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .imgg {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border: 1.3px solid #ddd;
+        }
+
+        .div-info-equip {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            left: 10px; 
+            top: 10px;
+            right: 10px; 
+            padding: 40px; 
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            z-index: 1; 
+        }
+
+        .all {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .all-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-comment,
+        .del {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #000;
+            transition: color 0.3s;
+        }
+
+        .btn-comment:hover,
+        .del:hover {
+            color: #44babc;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .btn-confirm,
+        .btn-cancel {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-confirm {
+            background-color: #44babc;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+
+            .btn-equipamento {
+                font-size: 1rem;
+            }
+
+            main {
+                padding: 15px;
+            }
+
+            .imgg {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body onload="verificarUsuario()">
+    <header>
+        <img src="./assets/techman.png">
+        <div class="sair">
+            <a href="newequipamento.html"><button class="btn-equipamento">Novo Equipamentos</button></a>
+            <a href="login.html" onclick="limparLocalStorage()"><i class="bi bi-box-arrow-in-right"></i></a>
+        </div>
+    </header>
+
+    <main>
+    </main>
+
+    <div class="modal" id="modal-delete" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir este equipamento?</p>
+            <button id="confirm-delete" class="btn-confirm">Sim</button>
+            <button id="cancel-delete" class="btn-cancel">Não</button>
+        </div>
+    </div>
+
+    <script>
+        const equipamentos = document.querySelectorAll('.all');
+        const main = document.querySelector('main');
+        const modal = document.querySelector('.modal');
+        const modal_equip = document.querySelector('#modal_equip');
+        const modal_comments = document.querySelector('#modal_comments')
+        const btn_equipamento = document.querySelector('.btn-equipamento');
+        const btn_comment = document.querySelectorAll('#btn-comment');
+        const overlay = document.querySelector('.overlay');
+        const user = JSON.parse(window.localStorage.getItem("user"));
+        const sair = document.querySelector('.sair');
+        var listaequip = [];
+
+        function verificarUsuario() {
+            if (user.perfilId == 1) {
+                sair.innerHTML = `<a href="login.html"><i class="bi bi-box-arrow-in-right"></i></a>`;
+            }
+            fetchEquipamentos();
+        }
+
+        async function fetchEquipamentos() {
+            listaequip = [];
+            try {
+                const response = await fetch('http://localhost:3000/equipamentos');
+                const data = await response.json();
+                data.forEach((e) => {
+                    listaequip.push(e);
+                });
+
+                if (user.perfilId == 1) {
+                    renderEquipamentosUsuarioComum();
+                } else {
+                    renderEquipamentos();
+                }
+            } catch (error) {
+                console.error('Erro ao buscar equipamentos:', error);
+            }
+        }
+
+        function renderEquipamentos() {
+            main.innerHTML = "";
+            listaequip.forEach((e) => {
+                const isAdmin = user.perfilId === 2;
+                const deleteButton = isAdmin ? `<button class="del" id="del" onclick="del(${e.id})"><i class="bi bi-trash3-fill"></i></button>` : '';
+
+                const card = `
+        <div class="card">
+            <img src="./assets/${e.imagem}" class="imgg">
+            <div class="div-info-equip">
+                <p> 
+                    <strong>${e.equipamento}</strong><br>
+                </p><br>
+                <p> 
+                    ${e.descricao}
+                </p><br>
+                <div class="all-btn">
+                    <button class="btn-comment" id="btn-comment" onclick="comentario(${e.id})"><i class="bi bi-chat-right-text-fill"></i></button>
+                    ${deleteButton} <!-- Botão de exclusão será renderizado apenas se o usuário for admin -->
+                </div>
+            </div>
+        </div>
+        `;
+                main.innerHTML += card;
+            });
+        }
+
+
+        function renderEquipamentosUsuarioComum() {
+            main.innerHTML = "";
+            listaequip.forEach((e) => {
+                const card = `
+        <div class="card">
+            <img src="./assets/${e.imagem}" class="imgg">
+            <div class="div-info-equip">
+                <p> 
+                    <strong>${e.equipamento}</strong><br>
+                    ${e.descricao}
+                </p>
+                <div class="all-btn">
+                    <button class="btn-comment" id="btn-comment" onclick="comentario(${e.id})"><i class="bi bi-chat-right-text-fill"></i></button>
+                </div>
+            </div>
+        </div>
+        `;
+                main.innerHTML += card;
+            });
+        }
+
+        let equipamentoIdToDelete;
+
+        async function del(id) {
+            equipamentoIdToDelete = id;
+            document.getElementById('modal-delete').style.display = 'flex';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmDeleteButton = document.getElementById('confirm-delete');
+            confirmDeleteButton.onclick = async function () {
+                try {
+                    await fetch(`http://localhost:3000/equipamentos/${equipamentoIdToDelete}`, {
+                        method: 'DELETE',
+                    });
+
+                    const index = listaequip.findIndex(e => e.id === equipamentoIdToDelete);
+                    if (index !== -1) {
+                        listaequip.splice(index, 1);
+                    }
+                    renderEquipamentos();
+                    document.getElementById('modal-delete').style.display = 'none';
+                    alert('Equipamento excluído com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao deletar equipamento:', error);
+                    alert('Erro ao excluir o equipamento. Tente novamente mais tarde.');
+                    document.getElementById('modal-delete').style.display = 'none';
+                }
+            };
+
+
+            const cancelDeleteButton = document.getElementById('cancel-delete');
+            cancelDeleteButton.onclick = function () {
+                document.getElementById('modal-delete').style.display = 'none';
+            };
+        });
+
+
+        function comentario(id) {
+            window.localStorage.setItem('idEquip', id);
+            window.location.href = "comentario.html";
+        }
+
+        function limparLocalStorage() {
+            window.localStorage.clear();
+        }
+    </script>
+</body>
+
+</html>

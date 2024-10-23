@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>Cadastro de Equipamentos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            gap: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #444;
+        }
+
+        .novoequip h3 {
+            color: #44babc;
+            font-size: 1.5rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            max-width: 300px;
+            height: 45px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            padding: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #44babc;
+            outline: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #ativo {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        #inativo {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        #submit {
+            background-color: #44babc;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+        }
+
+        #submit:hover {
+            background-color: #3b9b9e;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="window.location.href='equipamentos.html'"><i class="bi bi-x"></i></button>
+            <div class="novoequip" id="novoequip">
+                <h3>Cadastro de Equipamentos</h3>
+                <form class="form">
+                    <input type="text" name="nome" placeholder="Nome" required>
+                    <input type="text" name="imagem" placeholder="Endereço da imagem" required>
+                    <input type="text" name="descricao" placeholder="Descrição" required>
+                    <div class="checkbox-group">
+                        <div>
+                            <input type="checkbox" name="ativo" id="ativo">
+                            <label for="ativo">Ativo</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" name="inativo" id="inativo">
+                            <label for="inativo">Não Ativo</label>
+                        </div>
+                    </div>
+                    <input type="submit" value="Cadastrar" id="submit">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.querySelector('.form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const status = form.ativo.checked ? 'ativo' : form.inativo.checked ? 'inativo' : 'indefinido';
+
+            const equipamento = {
+                nome: form.nome.value,
+                imagem: form.imagem.value,
+                descricao: form.descricao.value,
+                status: status,
+            };
+
+            console.log(equipamento);
+
+            try {
+                const response = await fetch('http://localhost:3000/equipamentos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(equipamento)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                window.location.href = 'equipamentos.html';
+                console.log(data);
+            } catch (error) {
+                console.error("Erro ao enviar o equipamento:", error);
+            }
+        });
+    </script>
+</body>
+
+</html>
